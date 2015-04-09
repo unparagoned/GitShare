@@ -608,7 +608,7 @@ main(int argc, char* argv[])
 	//commented out since it causes device to hard fault crash when not debugging.
  // trace_puts("Hello ARM World!");
 
-	printf("Hello world \n");
+//	printf("Hello world \n");
 	trace_printf("Hello Worlds \n");
 
   //sets the state of the program.
