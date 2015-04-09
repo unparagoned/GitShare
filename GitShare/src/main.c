@@ -609,7 +609,7 @@ main(int argc, char* argv[])
  // trace_puts("Hello ARM World!");
 
 //	printf("Hello world \n");
-	trace_printf("Hello Worlds \n");
+//	trace_printf("Hello Worlds \n");
 
   //sets the state of the program.
   	thisState=MYARM;
@@ -1161,6 +1161,8 @@ uint16_t setSoundPWM()
 void PWMConfig(TIM_TypeDef *theTimer, uint16_t dutyCycle)
 {
 
+//looks like timers are initiated more than once.
+
 
 	//this sets the counter to 2^12
 	TimerPeriod = (SystemCoreClock / 17570 ) - 1;
@@ -1193,7 +1195,7 @@ void PWMConfig(TIM_TypeDef *theTimer, uint16_t dutyCycle)
 	TIM_OCInitStructure.TIM_OCIdleState = TIM_OCIdleState_Set;
 	TIM_OCInitStructure.TIM_OCNIdleState = TIM_OCIdleState_Reset;
 
-
+//this enables all 4 channels on whatever timer calls this function. So TIM11.
 
 	TIM_OC1Init(theTimer, &TIM_OCInitStructure);
 
@@ -1217,7 +1219,7 @@ void PWMConfig(TIM_TypeDef *theTimer, uint16_t dutyCycle)
 
 	TIM_TimeBaseStructure.TIM_Prescaler = 0;
 
-	/* Channel 1, 2,3 and 4 Configuration in PWM mode */
+	/* TIM8 PWM mode */
 	TimerPeriod=500;
 	Channel3Pulse=160;
 	TIM_TimeBaseStructure.TIM_Period = TimerPeriod;
@@ -1235,7 +1237,7 @@ void PWMConfig(TIM_TypeDef *theTimer, uint16_t dutyCycle)
 
 
 	// TIM_OC2Init(theTimer, &TIM_OCInitStructure);
-
+	//TIM8 channel 3, init
 	TIM_OCInitStructure.TIM_Pulse = Channel3Pulse;
 	TIM_OC3Init(theTimer, &TIM_OCInitStructure);
 
@@ -1268,15 +1270,21 @@ void PWMConfig(TIM_TypeDef *theTimer, uint16_t dutyCycle)
 
 
 		// TIM_OC2Init(theTimer, &TIM_OCInitStructure);
-
+		//TIM2 channel 3 enable - fails assert check, CtrlPWM isn't valid for TIM2
 		TIM_OCInitStructure.TIM_Pulse = Channel3Pulse;
 		TIM_OC3Init(theTimer, &TIM_OCInitStructure);
 
-		/* theTimer counter enable */
-		TIM_Cmd(theTimer, ENABLE);
+		  TIM_OC3PreloadConfig(theTimer, TIM_OCPreload_Enable);
 
+		  TIM_ARRPreloadConfig(theTimer, ENABLE);
+
+		  /* TIM3 enable counter */
+		  TIM_Cmd(theTimer, ENABLE);
+
+
+		  //not valid for TIM2
 		/* theTimer Main Output Enable */
-		TIM_CtrlPWMOutputs(theTimer, ENABLE);
+	///	TIM_CtrlPWMOutputs(theTimer, ENABLE);
 
 }
 

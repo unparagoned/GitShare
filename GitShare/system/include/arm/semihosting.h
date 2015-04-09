@@ -111,6 +111,9 @@ report_exception (int reason)
 {
   call_host (SEMIHOSTING_ReportException, (void*) reason);
 
+
+
+
   for (;;)
     ;
 }
