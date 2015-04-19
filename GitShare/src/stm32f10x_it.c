@@ -448,7 +448,8 @@ void TIM5_IRQHandler(void)
 			//disables outputs. These control the voltage, really should have a better method, linking period or something.
 			TIM_CtrlPWMOutputs(TIM8, ENABLE);
 
-			//function not valid for TIM2 TODO See what fixes it
+			//function not valid for TIM2
+			//TODO Check PWM output
 			//TIM_CtrlPWMOutputs(TIM2, ENABLE);
 
 

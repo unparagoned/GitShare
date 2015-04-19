@@ -603,10 +603,14 @@ void updateTimerInt(uint16_t timerTime)
 int
 main(int argc, char* argv[])
 {
+	// XXX main here
+
   // Send a greeting to the trace device (skipped on Release).
 
 	//commented out since it causes device to hard fault crash when not debugging.
- // trace_puts("Hello ARM World!");
+	// ITN degugging should work and it shouldn't hard fault without debugger
+
+  trace_puts("Hello ARM World!");
 
 //	printf("Hello world \n");
 //	trace_printf("Hello Worlds \n");
@@ -614,7 +618,7 @@ main(int argc, char* argv[])
   //sets the state of the program.
   	thisState=MYARM;
 
-  	// TODO
+
 
   	if (SysTick_Config(SystemCoreClock / 1000))
   	{
@@ -798,7 +802,7 @@ main(int argc, char* argv[])
 
 
   	uint8_t pauseState=0;
-  	/* TODO Addcode */
+
   	_it1=0;
   	_it0=0;
   	LCD_Clear(White);
@@ -844,7 +848,7 @@ main(int argc, char* argv[])
 
 
   	playSound("music.wav");
-  	/* TODO Addcode */
+
 
   	uint16_t tempCounterS=0;
   	uint8_t updateSoundVar=1;
@@ -1373,7 +1377,7 @@ void ADCConfig()
 }
 void ADCConfig2()
 {
-	// TODO
+	// TODO ?
 
 	//configures ADC for PC0,1,2
 

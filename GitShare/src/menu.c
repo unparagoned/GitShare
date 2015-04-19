@@ -1056,7 +1056,7 @@ void readingsAction(uint16_t *pin)
 
 }
 
-//TODO remember to update this copy function whenever menu changes
+//remember to update this copy function whenever menu changes
 void menuCopy(menu *original, menu *copy)
 {
 	int i;
