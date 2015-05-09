@@ -33,7 +33,8 @@ void PWMAction(int16_t *adjustment);
 void PWMSliderAction(uint16_t *yPos);
 void GPIOAction(uint8_t * state);
 void saveAction(uint8_t * ignore);
-void loadAction(uint8_t * ignore);
+//functions should be defined in header file
+//void loadAction(uint8_t * ignore);
 void MYDEBUGAction(uint8_t * ignore);
 void readingsAction(uint16_t *pin);
 void analogAction(int16_t *adjustment);
@@ -347,40 +348,37 @@ void startMenu()
 //returns whether the menu is open or not
 uint8_t menuInterface()
 {
-if(!menuOpen)
-{
-	return 0;
-}
-if(_it1)
-{
+	if(!menuOpen)
+	{
+		return 0;
+	}
+	if(_it1)
+	{
+		menuOption();
+		_it1=0;
+		displayFrame();
+	}
+	if(_it0)
+	{
+		localInt=0;
+		buttonPressLength=0;
+	}
+	if(localInt==1)
+	{
+		menuOption();
+		displayFrame();
+	}
 
-	menuOption();
-	_it1=0;
-	displayFrame();
-}
-if(_it0)
-{
-	localInt=0;
-	buttonPressLength=0;
-}
-if(localInt==1)
-{
-	menuOption();
-	displayFrame();
-}
+	if(displayReadings)
+	{
+		uint16_t nil=0;
+		readingsAction(&nil);
+		displayFrame();
+	}
 
-if(displayReadings)
-{
-	uint16_t nil=0;
-	readingsAction(&nil);
-	displayFrame();
-}
+	drawMenu();
 
-
-
-drawMenu();
-
-return 1;
+	return 1;
 }
 
 extern uint16_t X,Y;

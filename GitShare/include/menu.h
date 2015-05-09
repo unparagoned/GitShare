@@ -105,4 +105,8 @@ uint8_t menuInterface();
 void menuOption();
 void startMenu();
 uint8_t getRelTouch(uint16_t * xPos, uint16_t *yPos);
+
+void loadAction(uint8_t * ignore);
+
+
 #endif /* MENU_H_ */

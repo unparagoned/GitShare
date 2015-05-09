@@ -89,6 +89,7 @@ void InterruptConfig(void);
 void RCC_Config(void);
 void NVIC_Config(void);
 void GPIO_Config(void);
+void PWMConfig(void);
 void SysTick_Configuration(void);
 void Delay(uint32_t nCount);
 uint32_t DelayJoyStick(uint32_t nTime);
@@ -115,8 +116,10 @@ void Read_Ads7846(void);
 
 void LCDDMA(uint32_t sourceAddress, uint16_t pixels);
 void displayFrame();
-void playSound();
+void readSoundFile();
 uint16_t setSoundPWM();
+
+void updateWAVBuffer(uint8_t section);
 
 //void initFlashVariables();
 //void saveVariablesToFlash();

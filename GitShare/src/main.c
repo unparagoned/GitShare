@@ -260,7 +260,7 @@ void sysDelay(__IO uint32_t nTime);
 
 
 /* Private define  */
-DAC_InitTypeDef            DAC_InitStructure;
+
 
 __IO uint16_t timerIntBase=500;
 
@@ -274,7 +274,7 @@ __IO uint16_t timerIntBase=500;
 #define MESSAGE3   "   Built By    "
 #define MESSAGE4   "   Unparagoned  "
 
-#define MESSAGE5   " Version 0.1 "
+#define MESSAGE5   " Version 0.2 "
 #define MESSAGE6   "  "
 
 //touch commands
@@ -603,22 +603,17 @@ void updateTimerInt(uint16_t timerTime)
 int
 main(int argc, char* argv[])
 {
+
 	// XXX main here
 
-  // Send a greeting to the trace device (skipped on Release).
-
-	//commented out since it causes device to hard fault crash when not debugging.
+	// Send a greeting to the trace device (skipped on Release).
 	// ITN degugging should work and it shouldn't hard fault without debugger
 
-  trace_puts("Hello ARM World!");
+	trace_puts("Hello ARM World!");
+	//printf("Hello world \n");
 
-//	printf("Hello world \n");
-//	trace_printf("Hello Worlds \n");
-
-  //sets the state of the program.
-  	thisState=MYARM;
-
-
+	//sets the state of the program.
+	thisState=MYARM;
 
   	if (SysTick_Config(SystemCoreClock / 1000))
   	{
@@ -626,44 +621,15 @@ main(int argc, char* argv[])
   		while (1);
   	}
 
-
   	//initFlashVariables();
   	//saveVariablesToFlash();
 
   	int i = 0;
 
   	LCD_CtrlLinesConfig();
-
   	RCC_Configuration();
-  	GPIO_InitTypeDef GPIO_InitStructure;
-  	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_4 | GPIO_Pin_5;
-  	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
-  	GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-  	/* DAC channel1 Configuration */
-  	DAC_InitStructure.DAC_Trigger = DAC_Trigger_Software;
-  	DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_None;
-  	DAC_InitStructure.DAC_LFSRUnmask_TriangleAmplitude = DAC_TriangleAmplitude_4095;
-  	DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Enable;
-  	DAC_Init(DAC_Channel_1, &DAC_InitStructure);
-  	DAC_Init(DAC_Channel_2, &DAC_InitStructure);
-
-  	DAC_Cmd(DAC_Channel_1, ENABLE);
-  	DAC_Cmd(DAC_Channel_2, ENABLE);
-  	/* Set DAC dual channel DHR12RD register */
-  	//disabled as I probably don't need it.
-  	//DAC_SetDualChannelData(DAC_Align_12b_R, 0x100, 0x100);
-
-
-  	//GPIO setup
-  	GPIO_InitStructure.GPIO_Pin= GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_6|GPIO_Pin_7;
-  	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-  	GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-  	GPIO_InitStructure.GPIO_Pin= GPIO_Pin_8|GPIO_Pin_9|GPIO_Pin_10|GPIO_Pin_11;
-  	GPIO_Init(GPIOB, &GPIO_InitStructure);
-
+  	GPIO_Config();
+  	DAC_Config();
 
   	//analogue softswitch off
   	GPIO_ResetBits(GPIOA, GPIO_Pin_1);
@@ -671,43 +637,20 @@ main(int argc, char* argv[])
   	//cap drain when off
   	GPIO_ResetBits(GPIOA, GPIO_Pin_6);
 
-
   	PWMGPIOConfig();
   	ADCGPIOConfig();
   	ADCConfig();
-  	PWMConfig(TIM1, 5);
+  	PWMConfig();
 
-  	//see if we can get the timer to do an interrupt for us
-  	  /* Enable the TIM2 Interrupt */
-
+  	// TODO see if we can get the timer to do an interrupt for us
+  	/* Enable the TIM2 Interrupt */
 
   	TIM_ITConfig(TIM1,TIM_IT_Update, ENABLE);
 
   	ADCConfig2();
 
-
-  	//tim5 enable
-  	TimerPeriod = (SystemCoreClock / 17570 ) - 1;
-
-  	//TimerPeriod=1000;
-  	/* Time Base configuration */
-  	TIM_TimeBaseStructure.TIM_Prescaler = 8;
-  	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-  	TIM_TimeBaseStructure.TIM_Period = TimerPeriod;
-  	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
-  	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
-
-  	TIM_TimeBaseInit(TIM5, &TIM_TimeBaseStructure);
-  	TIM_SetCompare1(TIM5, 200);
-  	// updateTimerInt(0);
-
-  	TIM_ITConfig(TIM5,TIM_IT_CC1, ENABLE);
-
-  	/* TIM1 counter enable */
-  	TIM_Cmd(TIM5, ENABLE);
-
-
-
+  	//Enable TIM5
+  	TimerConfig();
 
   	/* Configure the FSMC Parallel interface -------------------------------------*/
   	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_FSMC, ENABLE);
@@ -718,6 +661,7 @@ main(int argc, char* argv[])
 
   	LCD_Clear(White);
 
+  	//Display basic info
   	/* Set the LCD Back Color */
   	LCD_SetBackColor(Blue);
   	/* Set the LCD Text Color */
@@ -734,7 +678,6 @@ main(int argc, char* argv[])
 
   	/* Interrupt Config */
   	NVIC_Configuration();
-
 
   	EXTI_InitTypeDef EXTI_InitStructure;
   	NVIC_InitTypeDef NVIC_InitStructure;
@@ -762,21 +705,6 @@ main(int argc, char* argv[])
   		STM_EVAL_LEDOn(LED4);
   	}
 
-  	/* Display message on STM3210X-EVAL LCD */
-  	/* Clear the LCD */
-  	LCD_Clear(White);
-
-  	/* Set the LCD Back Color */
-  	LCD_SetBackColor(Blue);
-  	/* Set the LCD Text Color */
-  	LCD_SetTextColor(White);
-  	LCD_DisplayStringLine(Line0, (uint8_t *)MESSAGE1);
-  	LCD_DisplayStringLine(Line1, (uint8_t *)MESSAGE2);
-  	LCD_DisplayStringLine(Line2, (uint8_t *)MESSAGE3);
-  	LCD_DisplayStringLine(Line3, (uint8_t *)MESSAGE4);
-  	LCD_DisplayStringLine(Line4, (uint8_t *)MESSAGE5);
-  	LCD_DisplayStringLine(Line5, (uint8_t *)MESSAGE6);
-
   	//while loop for display
   	/*move to global
     uint16_t thecolor=65535;
@@ -785,7 +713,6 @@ main(int argc, char* argv[])
     uint32_t SDAddress=0;
   	 */
   	Storage_Init();
-
 
   	/*temp in global to move display out of main
     uint16_t frameNumber=1;
@@ -798,17 +725,17 @@ main(int argc, char* argv[])
   	//  SPI1_Init();
   	SPI2_Init();
 
-
-
-
   	uint8_t pauseState=0;
 
+  	//TODO give these more descriptive values.
   	_it1=0;
   	_it0=0;
+
   	LCD_Clear(White);
   	programState=VIDEO;
 
-  	uint16_t x=1000;
+  	//unused var
+  	//uint16_t x=1000;
 
   	//soft analogue on
   	GPIO_SetBits(GPIOA, GPIO_Pin_1);
@@ -817,20 +744,26 @@ main(int argc, char* argv[])
   	GPIO_SetBits(GPIOA, GPIO_Pin_6);
 
 
-
   	menuInit();
   	loadAction(0);
 
-  	uint16_t thePeriod=0;
-  	uint16_t theDuty=0;
+  	//unused
+  	//uint16_t thePeriod=0;
+  	//	uint16_t theDuty=0;
 
-  	uint16_t timeArray[1000][2];
+  	//uint16_t timeArray[1000][2];
+
   	uint16_t timerCounter;
 
   	//The sets voltage to 50V
+  	//TODO explain how it is set - forumula should work.
   	TIM1->ARR=300;
   	TIM1->CCR3=10;
   	outputPeriods=0;
+
+
+  	//doesn't seem to do anything.- looks like it's taking an average
+#ifdef NEVER
   	for(timerCounter=0;timerCounter<1000;timerCounter++)
   	{
   		timeArray[timerCounter][0]=ADCConvertedValue;
@@ -838,30 +771,25 @@ main(int argc, char* argv[])
   		delay(1000);
   	}
 
+#endif
+
   	uint32_t ADCAverage=0;
   	// optimumDuty(&thePeriod,&theDuty);
 
   	GPIO_SetBits(GPIOA, GPIO_Pin_7);
   	GPIO_SetBits(GPIOA, GPIO_Pin_6);
 
+  	readSoundFile("music.wav");
 
+  	//uint16_t tempCounterS=0;
 
-
-  	playSound("music.wav");
-
-
-  	uint16_t tempCounterS=0;
   	uint8_t updateSoundVar=1;
+
+  	// XXX main program loop
   	while(1)
   	{
-  //temp sound test code
 
-
-
-
-
-
-
+  			//temp sound test code
 
   			if(soundBufferIndex>=SOUNDBUFFERSIZE/2 && updateSoundVar==1)
   			{
@@ -873,15 +801,8 @@ main(int argc, char* argv[])
   				updateSoundVar=1;
   			}
 
-
-
   		updateWAVBuffer(soundBufferUpdate);
   		soundBufferUpdate=0;
-
-
-
-
-
 
   	//	reduceOutput(0);
 
@@ -1049,7 +970,7 @@ void displayFrame()
 }
 
 //doesn't play it but reads it, rename and redo this
-void playSound(uint8_t* fileName)
+void readSoundFile(uint8_t* fileName)
 {
 
 	while(DMAComplete == 0)
@@ -1078,14 +999,12 @@ void playSound(uint8_t* fileName)
 	while(SD_GetStatus() != SD_TRANSFER_OK);
 	//66 is 0x42, size of meta data. 33 unit16 is equiv.
 
-		wavSDAddress+=12288;
+	wavSDAddress+=12288;
 	//while(DMAComplete==0);
 
 	SDIOEnd=0;
 	//largeTransfer=1;
 	wavmetaDataOffset+=wavaddressOffset;
-
-
 
 	if(wavframeNumber++>87500)
 	{
@@ -1095,9 +1014,11 @@ void playSound(uint8_t* fileName)
 	TIM1->ARR=256;
 
 	soundBufferIndex=44; //skips the meta deta
-
 }
-
+/*
+ * reads from usd at sector
+ */
+// !TODO update function, to also take file name
 void updateWAVBuffer(uint8_t section)
 {
 	if(tempNumberOfReads++>8500)
@@ -1130,9 +1051,6 @@ void updateWAVBuffer(uint8_t section)
 	//66 is 0x42, size of meta data. 33 unit16 is equiv.
 
 		wavSDAddress+=SOUNDBUFFERSIZE/2;
-
-
-
 }
 
 //return 1 if buffer needs to be filled, returns 2 if second half of buffer needs to be filled, returns 0 if buffer is fine
@@ -1161,12 +1079,38 @@ uint16_t setSoundPWM()
 	return 0;
 }
 
-
-void PWMConfig(TIM_TypeDef *theTimer, uint16_t dutyCycle)
+void TimerConfig(void)
 {
 
+	//tim5 enable
+	  	TimerPeriod = (SystemCoreClock / 17570 ) - 1;
+
+	  	//TimerPeriod=1000;
+	  	/* Time Base configuration */
+	  	TIM_TimeBaseStructure.TIM_Prescaler = 8;
+	  	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+	  	TIM_TimeBaseStructure.TIM_Period = TimerPeriod;
+	  	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+	  	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
+
+	  	TIM_TimeBaseInit(TIM5, &TIM_TimeBaseStructure);
+	  	TIM_SetCompare1(TIM5, 200);
+	  	// updateTimerInt(0);
+
+	  	TIM_ITConfig(TIM5,TIM_IT_CC1, ENABLE);
+
+	  	/* TIM1 counter enable */
+	  	TIM_Cmd(TIM5, ENABLE);
+}
+
+void PWMConfig()
+{
+
+	TIM_TypeDef *theTimer=TIM1;
+	uint16_t dutyCycle=5;
 //looks like timers are initiated more than once.
 
+//TODO check everything and actual outputs.
 
 	//this sets the counter to 2^12
 	TimerPeriod = (SystemCoreClock / 17570 ) - 1;
@@ -1589,7 +1533,20 @@ void IntExtOnOffConfig(FunctionalState NewState)
 void GPIO_Config(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
+  	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_4 | GPIO_Pin_5;
+  	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+  	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
+  	GPIO_InitStructure.GPIO_Pin= GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_6|GPIO_Pin_7;
+  	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+  	GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  	GPIO_InitStructure.GPIO_Pin= GPIO_Pin_8|GPIO_Pin_9|GPIO_Pin_10|GPIO_Pin_11;
+  	GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+// doesn't look like it's used
+#ifdef NEVER
 	/* Configure PG.07, PG.08, PG.13, PG.14 and PG.15 as input floating */
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
@@ -1632,7 +1589,35 @@ void GPIO_Config(void)
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOF, &GPIO_InitStructure);
 	GPIO_SetBits(GPIOF, GPIO_Pin_6);
+
+#endif
 }
+
+/**
+ * @brief  Configures the different GPIO ports pins.
+ * @param  None
+ * @retval : None
+ */
+void DAC_Config(void)
+{
+
+	DAC_InitTypeDef DAC_InitStructure;
+
+  	/* DAC channel1 Configuration */
+  	DAC_InitStructure.DAC_Trigger = DAC_Trigger_Software;
+  	DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_None;
+  	DAC_InitStructure.DAC_LFSRUnmask_TriangleAmplitude = DAC_TriangleAmplitude_4095;
+  	DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Enable;
+  	DAC_Init(DAC_Channel_1, &DAC_InitStructure);
+  	DAC_Init(DAC_Channel_2, &DAC_InitStructure);
+
+  	DAC_Cmd(DAC_Channel_1, ENABLE);
+  	DAC_Cmd(DAC_Channel_2, ENABLE);
+  	/* Set DAC dual channel DHR12RD register */
+  	//disabled as I probably don't need it.
+  	//DAC_SetDualChannelData(DAC_Align_12b_R, 0x100, 0x100);
+
+  	}
 
 /**
  * @brief  Inserts a delay time.
